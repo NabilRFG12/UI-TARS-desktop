@@ -33,7 +33,10 @@ import { Alert, AlertDescription } from '@renderer/components/ui/alert';
 import { cn } from '@renderer/utils';
 
 import { PresetImport, PresetBanner } from './preset';
+import { OpenRouterModelPicker } from './OpenRouterModelPicker';
 import { api } from '@/renderer/src/api';
+
+const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
 const formSchema = z.object({
   vlmProvider: z.nativeEnum(VLMProviderV2, {
@@ -321,7 +324,25 @@ export function VLMSettings({
             name="vlmBaseUrl"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>VLM Base URL</FormLabel>
+                <div className="flex items-center justify-between">
+                  <FormLabel>VLM Base URL</FormLabel>
+                  {!isRemoteAutoUpdatedPreset &&
+                    field.value !== OPENROUTER_BASE_URL && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto px-2 py-0.5 text-xs text-muted-foreground"
+                        onClick={() =>
+                          form.setValue('vlmBaseUrl', OPENROUTER_BASE_URL, {
+                            shouldValidate: true,
+                          })
+                        }
+                      >
+                        Use OpenRouter
+                      </Button>
+                    )}
+                </div>
                 <FormControl>
                   <Input
                     className="bg-white"
@@ -384,6 +405,19 @@ export function VLMSettings({
                     disabled={isRemoteAutoUpdatedPreset}
                   />
                 </FormControl>
+                {!isRemoteAutoUpdatedPreset &&
+                  newBaseUrl?.includes('openrouter.ai') && (
+                    <div className="pt-2">
+                      <OpenRouterModelPicker
+                        value={field.value}
+                        onSelect={(modelId) =>
+                          form.setValue('vlmModelName', modelId, {
+                            shouldValidate: true,
+                          })
+                        }
+                      />
+                    </div>
+                  )}
               </FormItem>
             )}
           />
